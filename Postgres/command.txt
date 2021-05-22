@@ -1,0 +1,2 @@
+#dump db
+pg_dump -Fc -U postgres -d postgres > D:\dumps\db.dump

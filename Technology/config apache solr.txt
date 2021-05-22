@@ -1,0 +1,25 @@
+Setup and config apache solr
+Config lib and class
+-> config in /var/solr/data/core_name/conf/solrconfig.xml
+
+Config lib:
+  <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
+Config requestHandler
+  <requestHandler name="/update/extract"
+                  startup="lazy"
+                  class="solr.extraction.ExtractingRequestHandler" >
+    <lst name="defaults">
+      <str name="xpath">/xhtml:html/xhtml:body/descendant:node()</str>
+      <str name="capture">content</str>
+      <str name="fmap.meta">attr_meta_</str>
+      <str name="uprefix">attr_</str>
+      <str name="lowernames">true</str>
+    </lst>
+  </requestHandler>
+  
+-> config in /var/solr/data/core_name/conf/schema.xml(manage-schema.xml)
+   <dynamicField name="*_i" type="int" indexed="true"  stored="true"/>
+   <field name="docId" type="string" default="defaulDocId" indexed="true" stored="true"/>
+
+

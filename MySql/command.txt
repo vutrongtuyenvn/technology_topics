@@ -1,0 +1,16 @@
+1:bind-address
+
+B1: vi etc/my.cnf.d/mysql-server.cnf
+B2: add bind-address=192.168.134.138
+
+2:Create mysql user & grant
+
+CREATE USER 'root'@'%' IDENTIFIED BY 'P@ssw0rd';
+GRANT ALL ON mysql.* TO 'root'@'%';
+FLUSH PRIVILEGES;
+
+
+3:Firewall(Iptables)
+
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT
+-A FORWARD -i ens33 -s 0/0 -p tcp --dport 3306 -j ACCEPT
