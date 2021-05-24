@@ -1,2 +1,5 @@
 #dump db
 pg_dump -Fc -U postgres -d postgres > D:\dumps\db.dump
+
+
+pg_restore -U postgres -d mobieoffice -C -O C:\Users\MrT\Downloads\mobieoffice.dump
