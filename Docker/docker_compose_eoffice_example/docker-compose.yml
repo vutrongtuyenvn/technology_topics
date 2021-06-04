@@ -1,0 +1,228 @@
+version: '3'
+networks:
+        smart_office:
+                driver: bridge
+services:
+        web:
+                #image: nginx
+                build: 
+                        context: .
+                        dockerfile: /u01/smart_office/core_service/web/Dockerfile
+                container_name: web_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /etc/localtime:/etc/localtime:ro
+                        - ./web/nginx.conf:/etc/nginx/nginx.conf
+                        - /u01/smart_office/core_service/web/html:/usr/share/nginx/html
+                expose:
+                        - "8080"
+                ports:
+                        - "8080:8080"
+        webeoffice:
+                build: 
+                        context: .
+                        dockerfile: /u01/smart_office/core_service/web_eoffice/Dockerfile
+                container_name: web_eoffice
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /etc/localtime:/etc/localtime:ro
+                        - ./web_eoffice/nginx.conf:/etc/nginx/nginx.conf
+                        - /u01/smart_office/core_service/web_eoffice/html:/usr/share/nginx/html
+                expose:
+                        - "80"
+                ports:
+                        - "80:80"
+                        
+        rabbitmq:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: rabbitmq
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /etc/localtime:/etc/localtime:ro
+                ports:
+                        - "5672:5672"
+                        - "15672:15672"
+                environment: 
+                    - "RABBITMQ_USER=admin"
+                    - "RABBITMQ_PASS=admin"
+                    
+        redis:
+                image: redis
+                container_name: redis_sm
+                networks:
+                        - smart_office
+                restart: always
+                #volumes:
+                #        - /u01/smart_office/core_service/redis/data:/var/lib/redis
+                #        - /u01/smart_office/core_service/redis/redis.conf:/usr/local/etc/redis/redis.conf
+                #command: redis-server
+                ports:
+                        - "6379:6379"
+                expose:
+                        - "6379"
+                environment:
+                        - REDIS_REPLICATION_MODE=master
+
+        account:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: account_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/account:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/account-0.0.1-SNAPSHOT.jar"           
+                environment: 
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"  
+                ports:
+                        - "10002:10002"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M
+                                        
+        tenant:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: tenant_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/tenant:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/tenant-0.0.1-SNAPSHOT.jar"
+                environment:
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"
+                ports:
+                        - "10006:10006"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M                        
+
+        sso:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: sso_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/sso:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/sso-0.0.1-SNAPSHOT.jar"
+                environment:
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"
+                ports:
+                        - "10003:10003"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M                        
+
+        common:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: common_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/common:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/CommonService-0.0.1-SNAPSHOT.jar"
+                environment:
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"
+                ports:
+                        - "10009:10009"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M                        
+
+        notification:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: notification_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/notification:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/notification-0.0.1-SNAPSHOT.jar"
+                environment:
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"
+                ports:
+                        - "10001:10001"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M                        
+
+        core:
+                image: leanh3991/eoffice:centos7_java8
+                container_name: core_sm
+                networks:
+                        - smart_office
+                restart: always
+                volumes:
+                        - /u01/smart_office/core_service/core:/usr/share/java
+                        - /etc/localtime:/etc/localtime:ro
+                working_dir: /usr/share/java
+                command: bash -c "nohup /usr/bin/java -jar /usr/share/java/core-0.0.1-SNAPSHOT.jar"
+                environment:
+                        - "SPRING_PROFILES_ACTIVE=smartoffice-dev"
+                extra_hosts:
+                        - "smartoffice.softlb:172.39.0.2"
+                ports:
+                        - "10004:10004"                        
+                deploy:
+                        resources:
+                                limits:
+                                        cpus: '0.50'
+                                        memory: 512M
+                                reservations:
+                                        cpus: '0.25'
+                                        memory: 128M
+
+
